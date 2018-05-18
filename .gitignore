@@ -4,4 +4,4 @@
 *.swp
 
 # Directories
-*__pychache__*
+__pycache__/
