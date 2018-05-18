@@ -25,7 +25,7 @@ def allowed_file(filename):
 def upload():
     # if current_user.is_authenticated:
     #     return redirect(url_for('index'))
-    
+
     form = UploaderForm()
     if form.validate_on_submit():
         if 'file' not in request.files:
@@ -48,7 +48,7 @@ def upload():
 
         flash(f'Congratulations! New Applicant registered')
         return redirect(url_for('index'))
-    
+
     return render_template('upload.html', title='Upload', form=form)
 
 
