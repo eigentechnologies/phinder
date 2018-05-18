@@ -1,6 +1,7 @@
 import os
 
-from flask import flash, Flask, jsonify, redirect, render_template, Response, request, url_for
+from flask import flash, Flask, jsonify, redirect, render_template, Response, request, send_file, url_for
+from wand.image import Image
 from werkzeug.utils import secure_filename
 
 from app import app, db
@@ -52,11 +53,14 @@ def upload():
 
 
 @app.route('/applicant', methods=['GET', 'PUT'])
-def get_applicant():
+def applicant():
     if request.method == 'GET':
         applicant = db.session.query(Applicant).filter_by(status='PENDING').first()
+        img = Image(filename=os.path.join(app.config['UPLOAD_FOLDER'], f'{applicant.cv}[0]'))
+        img_name = applicant.name.replace(' ', '_')
+        img.save(filename=os.path.join(app.config['UPLOAD_FOLDER'], f'{img_name}.jpg'))
         if applicant:
-            return jsonify(id=applicant.id, name=applicant.name, filename=applicant.cv)
+            return jsonify(id=applicant.id, name=applicant.name, filename=applicant.cv, image=os.path.join(app.config['UPLOAD_FOLDER'], f'{img_name}.jpg'))
         else:
             return jsonify({})
 
@@ -68,4 +72,7 @@ def get_applicant():
         return jsonify({'success': True})
 
 
-
+@app.route('/image', methods=['GET'])
+def serve_image():
+    img_path = request.get_json(force=True).get('img_path')
+    return send_file(img_path, mimetype='image/gif')
