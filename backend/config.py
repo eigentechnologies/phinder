@@ -1,0 +1,13 @@
+import os
+
+# clever - take dirname from the __file__ attributes, then get the path
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+class Config(object):
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
+
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        'sqlite:///' + os.path.join(basedir, 'app.db')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    UPLOAD_FOLDER = '/home/andrew.meadowcroft/phinder/uploads'                           
