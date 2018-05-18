@@ -1,9 +1,10 @@
 import os
 
-from app import app
-from flask import flash, Flask, request, redirect, render_template, url_for
+from flask import flash, Flask, jsonify, redirect, render_template, request, url_for
 from werkzeug.utils import secure_filename
 
+from app import app, db
+from app.models import Applicant
 from app.forms import UploaderForm
 
 @app.route('/')
@@ -25,49 +26,32 @@ def upload():
     #     return redirect(url_for('index'))
     
     form = UploaderForm()
-    # if form.validate_on_submit():
-    #     user = Applicant(name=form.name.data, cv=form.cv.data)
-    #     user.set_password(form.password.data)
-    #     flash(f'Congratulations! New Applicant registered')
-    #     return redirect(url_for('index'))
+    if form.validate_on_submit():
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            applicant = Applicant(name=form.name.data, cv=filename, status='PENDING')
+            db.session.add(applicant)
+            db.session.commit()
+            return redirect(url_for('upload',
+                                    filename=filename))
+
+        flash(f'Congratulations! New Applicant registered')
+        return redirect(url_for('index'))
     
-    return render_template('upload.html', title='Upload')#, form=form)
-    return '''
-    <!doctype html>
-    <title>Upload new File</title>
-    <h1>Upload new File</h1>
-    <form method=post enctype=multipart/form-data>
-      <p><input type=file name=file>
-         <input type=submit value=Upload>
-    </form>
-    '''
+    return render_template('upload.html', title='Upload', form=form)
 
 
-# @app.route('/upload', methods=['GET', 'POST'])
-# def upload_file():
-#     if request.method == 'POST':
-#         if 'file' not in request.files:
-#             flash('No file part')
-#             return redirect(request.url)
-# 
-#         file = request.files['file']
-#         if file.filename == '':
-#             flash('No selected file')
-#             return redirect(request.url)
-# 
-#         if file and allowed_file(file.filename):
-#             filename = secure_filename(file.filename)
-#             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-#             return redirect(url_for('uploaded_file',
-#                                     filename=filename))
-# 
-#     return render_template('upload.html', title='Upload', form=form, user=user)
-    # return '''
-    # <!doctype html>
-    # <title>Upload new File</title>
-    # <h1>Upload new File</h1>
-    # <form method=post enctype=multipart/form-data>
-    #   <p><input type=file name=file>
-    #      <input type=submit value=Upload>
-    # </form>
-    # '''
+@app.route('/applicant', methods=['GET'])
+def get_applicant():
+    applicant = db.session.query(Applicant).filter_by(status='PENDING').first()
+    return {'name': applicant.name} 
