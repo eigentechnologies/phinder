@@ -1,155 +1,16 @@
 import React, { Component } from 'react';
 
 import {
-  Platform,
-  StyleSheet,
   View,
   Text,
-  Dimensions,
-  Animated,
-  PanResponder,
   Button,
 } from 'react-native';
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
+import Card from './card';
+import styles from './styles';
 
 
-class Card extends Component {
-
-  constructor() {
-    super();
-    this.panResponder;
-    this.state = {
-      Xposition: new Animated.Value(0),
-      RightText: false,
-      LeftText: false,
-    }
-    this.CardView_Opacity = new Animated.Value(1);
-  }
-
-  componentWillMount() {
-    this.panResponder = PanResponder.create({
-      onStartShouldSetPanResponder: (evt, gestureState) => false,
-
-      onMoveShouldSetPanResponder: (evt, gestureState) => true,
-
-      onStartShouldSetPanResponderCapture: (evt, gestureState) => false,
-
-      onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
-
-      onPanResponderMove: (evt, gestureState) => {
-        this.state.Xposition.setValue(gestureState.dx);
-
-        if ( gestureState.dx > SCREEN_WIDTH - 250 ) {
-          this.setState({
-            RightText: true,
-            LeftText: false
-          });
-
-        } else if ( gestureState.dx < -SCREEN_WIDTH + 250 ) {
-          this.setState({
-            LeftText: true,
-            RightText: false
-          });
-        }
-      },
-
-      onPanResponderRelease: (evt, gestureState) => {
-        if( gestureState.dx < SCREEN_WIDTH - 300 && gestureState.dx > -SCREEN_WIDTH + 300 ) {
-          this.setState({
-            LeftText: false,
-            RightText: false
-          });
-
-          Animated.spring( this.state.Xposition,
-          {
-            toValue: 0,
-            speed: 5,
-            bounciness: 10,
-          }, { useNativeDriver: true }).start();
-
-        } else if( gestureState.dx > SCREEN_WIDTH - 300 ) {
-
-          Animated.parallel(
-          [
-            Animated.timing( this.state.Xposition,
-            {
-              toValue: SCREEN_WIDTH,
-              duration: 200
-            }),
-
-            Animated.timing( this.CardView_Opacity,
-            {
-              toValue: 0,
-              duration: 200
-            })
-          ], { useNativeDriver: true }).start(() =>
-          {
-            this.setState({ LeftText: false, RightText: false }, () =>
-            {
-              this.props.removeCardView();
-            });
-          });
-
-        } else if( gestureState.dx < -SCREEN_WIDTH + 300 ) {
-          Animated.parallel(
-          [
-            Animated.timing( this.state.Xposition,
-            {
-              toValue: -SCREEN_WIDTH,
-              duration: 200
-            }),
-
-            Animated.timing( this.CardView_Opacity,
-            {
-              toValue: 0,
-              duration: 200
-            })
-          ], { useNativeDriver: true }).start(() =>
-          {
-            this.setState({ LeftText: false, RightText: false }, () =>
-            {
-              this.props.removeCardView();
-            });
-          });
-        }
-      }
-    });
-  }
-
-  render() {
-    const rotateCard = this.state.Xposition.interpolate({
-       inputRange: [-200, 0, 200],
-       outputRange: ['-20deg', '0deg', '20deg'],
-    });
-
-    return (
-      <Animated.View {...this.panResponder.panHandlers}
-        style = {[
-          styles.card, { backgroundColor: this.props.item.backgroundColor,
-          opacity: this.CardView_Opacity,
-          transform: [{ translateX: this.state.Xposition },
-          { rotate: rotateCard }]}
-        ]}
-      >
-
-        <Text style = { styles.applicantName }>
-          { this.props.item.applicantName }
-        </Text>
-
-        { this.state.LeftText &&
-          <Text style = { styles.leftText }> Left Swipe </Text>
-        }
-
-        { this.state.RightText &&
-          <Text style = { styles.rightText }> Right Swipe </Text>}
-
-      </Animated.View>
-    );
-  }
-}
-
-export default class MyApp extends Component {
+export default class App extends Component {
 
   constructor() {
     super();
@@ -233,46 +94,3 @@ export default class MyApp extends Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  MainContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: ( Platform.OS === 'ios' ) ? 20 : 0
-  },
-
-  card: {
-    width: '75%',
-    height: '45%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'absolute',
-    borderRadius: 7
-  },
-
-  applicantName: {
-    color: '#fff',
-    fontSize: 24
-  },
-
-  leftText: {
-    top: 22,
-    right: 32,
-    position: 'absolute',
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    backgroundColor: 'transparent'
-  },
-
-  rightText: {
-    top: 22,
-    left: 32,
-    position: 'absolute',
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    backgroundColor: 'transparent'
-  }
-});
