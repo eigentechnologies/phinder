@@ -1,0 +1,14 @@
+<html>
+    <head>
+      {% if title %}
+      <title>{{ title }} - Phinder</title>
+      {% else %}
+      <title>Welcome to Phinder</title>
+      {% endif %}
+    </head>
+    <body>
+        <div>Phinder: <a href="/index">Home</a></div>
+        <hr>
+        {% block content %}{% endblock %}
+    </body>
+</html>
