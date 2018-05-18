@@ -1,2 +1,7 @@
+# File extensions
 *.pdf
+*.swo
+*.swp
+
+# Directories
 *__pychache__*
