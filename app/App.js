@@ -180,72 +180,55 @@ export default class MyApp extends Component {
         backgroundColor: '#FFC107'
       }],
       noCards: false,
-      newId: 6,
     };
   }
 
   componentDidMount() {
-    this.setState({
-      cards: this.state.cards.reverse()
-    });
-
     if( this.state.cards.length == 0 ) {
       this.setState(this.getDefaultState());
     }
   }
 
   removeCardView(id) {
-    this.state.cards.splice( this.state.cards.findIndex(x => x.id == id ), 1 );
+    this.getNextApplicant();
 
-    this.setState({ cards: this.state.cards }, () =>
-    {
-      if( this.state.cards.length == 0 ) {
-        this.setState(this.getDefaultState());
-      }
-    });
+    const newState = {...this.state};
+    newState.cards.splice(this.state.cards.findIndex(x => x.id == id ), 1);
+    this.setState(newState);
   }
 
-  getApplicant() {
+  getNextApplicant() {
     fetch('http://127.0.0.1:5000/applicant', { method: 'GET' })
       .then(response => response.json())
-      .then(json => this.addApplicantCard(json.name))
+      .then(json => this.addApplicantCard(json))
   }
 
-  addApplicantCard(name) {
+  addApplicantCard(json) {
     const newState = {...this.state};
     newState.cards.push({
-      id: name,
-      applicantName: name,
+      id: json.id,
+      applicantName: json.name,
       backgroundColor: '#FF0000',
     });
     this.setState(newState);
   }
 
+  get cards() {
+    const cards = [...this.state.cards].reverse();
+
+    return cards.map(( item, key ) =>
+      <Card
+        key={key}
+        item={item}
+        removeCardView={() => this.removeCardView(item.id)}
+      />
+    )
+  }
+
   render() {
     return(
       <View style = { styles.MainContainer }>
-        {
-          this.state.cards.map(( item, key ) =>
-            <Card
-              key={ key }
-              item={ item }
-              removeCardView={() => this.removeCardView(item.id)}
-            />
-          )
-        }
-
-        <View style={{ flex: 1 }}>
-          <Button
-            title='GET NEXT CARD'
-            onPress={() => this.getApplicant()}
-          />
-        </View>
-
-        { this.state.noCards &&
-            <Text style = {{ fontSize: 22, color: '#000' }}>
-              No more paralegals female found. Sorry, Julio.
-            </Text>
-        }
+        { this.cards }
       </View>
     );
   }
