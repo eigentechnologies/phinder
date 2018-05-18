@@ -20,10 +20,32 @@ export default class Card extends Component {
     this.panResponder;
     this.state = {
       Xposition: new Animated.Value(0),
-      RightText: false,
-      LeftText: false,
+      displayText: null,
     }
     this.CardView_Opacity = new Animated.Value(1);
+  }
+
+  swipe(newPosition, judgement) {
+    Animated.parallel(
+    [
+      Animated.timing( this.state.Xposition,
+      {
+        toValue: newPosition,
+        duration: 200
+      }),
+
+      Animated.timing( this.CardView_Opacity,
+      {
+        toValue: 0,
+        duration: 200
+      })
+    ], { useNativeDriver: true }).start(() =>
+    {
+      this.setState(
+        {displayText: null},
+        () => this.props.passJudgement(judgement)
+      );
+    });
   }
 
   componentWillMount() {
@@ -40,77 +62,30 @@ export default class Card extends Component {
         this.state.Xposition.setValue(gestureState.dx);
 
         if ( gestureState.dx > SCREEN_WIDTH - 250 ) {
-          this.setState({
-            RightText: true,
-            LeftText: false
-          });
+          this.setState({ displayText: 'right' });
 
         } else if ( gestureState.dx < -SCREEN_WIDTH + 250 ) {
-          this.setState({
-            LeftText: true,
-            RightText: false
-          });
+          this.setState({ displayText: 'left' });
         }
       },
 
       onPanResponderRelease: (evt, gestureState) => {
-        if( gestureState.dx < SCREEN_WIDTH - 300 && gestureState.dx > -SCREEN_WIDTH + 300 ) {
-          this.setState({
-            LeftText: false,
-            RightText: false
-          });
+        if( gestureState.dx < SCREEN_WIDTH - 300 &&
+            gestureState.dx > -SCREEN_WIDTH + 300 ) {
 
-          Animated.spring( this.state.Xposition,
-          {
-            toValue: 0,
-            speed: 5,
-            bounciness: 10,
-          }, { useNativeDriver: true }).start();
+          this.setState({ displayText: null });
+
+          Animated.spring(
+            this.state.Xposition,
+            {toValue: 0, speed: 5, bounciness: 10},
+            {useNativeDriver: true}
+          ).start();
 
         } else if( gestureState.dx > SCREEN_WIDTH - 300 ) {
-
-          Animated.parallel(
-          [
-            Animated.timing( this.state.Xposition,
-            {
-              toValue: SCREEN_WIDTH,
-              duration: 200
-            }),
-
-            Animated.timing( this.CardView_Opacity,
-            {
-              toValue: 0,
-              duration: 200
-            })
-          ], { useNativeDriver: true }).start(() =>
-          {
-            this.setState({ LeftText: false, RightText: false }, () =>
-            {
-              this.props.removeCardView();
-            });
-          });
+          this.swipe(SCREEN_WIDTH, 'LIKEY');
 
         } else if( gestureState.dx < -SCREEN_WIDTH + 300 ) {
-          Animated.parallel(
-          [
-            Animated.timing( this.state.Xposition,
-            {
-              toValue: -SCREEN_WIDTH,
-              duration: 200
-            }),
-
-            Animated.timing( this.CardView_Opacity,
-            {
-              toValue: 0,
-              duration: 200
-            })
-          ], { useNativeDriver: true }).start(() =>
-          {
-            this.setState({ LeftText: false, RightText: false }, () =>
-            {
-              this.props.removeCardView();
-            });
-          });
+          this.swipe(-SCREEN_WIDTH, 'NO_LIKEY');
         }
       }
     });
@@ -136,11 +111,11 @@ export default class Card extends Component {
           { this.props.item.applicantName }
         </Text>
 
-        { this.state.LeftText &&
+        { this.state.displayText === 'left' &&
           <Text style = { styles.leftText }> Left Swipe </Text>
         }
 
-        { this.state.RightText &&
+        { this.state.displayText === 'right' &&
           <Text style = { styles.rightText }> Right Swipe </Text>}
 
       </Animated.View>

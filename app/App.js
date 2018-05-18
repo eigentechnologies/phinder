@@ -10,6 +10,8 @@ import Card from './card';
 import styles from './styles';
 
 
+const URL = 'http://127.0.0.1:5000';
+
 export default class App extends Component {
 
   constructor() {
@@ -50,16 +52,19 @@ export default class App extends Component {
     }
   }
 
-  removeCardView(id) {
+  removeCardView(id, judgement) {
     this.getNextApplicant();
 
     const newState = {...this.state};
     newState.cards.splice(this.state.cards.findIndex(x => x.id == id ), 1);
     this.setState(newState);
+
+    console.log(judgement);
+    // TODO SEND JUDGEMENT
   }
 
   getNextApplicant() {
-    fetch('http://127.0.0.1:5000/applicant', { method: 'GET' })
+    fetch(`${URL}/applicant`, { method: 'GET' })
       .then(response => response.json())
       .then(json => this.addApplicantCard(json))
   }
@@ -81,7 +86,7 @@ export default class App extends Component {
       <Card
         key={key}
         item={item}
-        removeCardView={() => this.removeCardView(item.id)}
+        passJudgement={j => this.removeCardView(item.id, j)}
       />
     )
   }
