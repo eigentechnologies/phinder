@@ -14,7 +14,7 @@ import {
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 
-class SwipeableCardView extends Component {
+class Card extends Component {
 
   constructor() {
     super();
@@ -126,20 +126,23 @@ class SwipeableCardView extends Component {
     return (
       <Animated.View {...this.panResponder.panHandlers}
         style = {[
-          styles.cardView_Style, { backgroundColor: this.props.item.backgroundColor,
+          styles.card, { backgroundColor: this.props.item.backgroundColor,
           opacity: this.CardView_Opacity,
           transform: [{ translateX: this.state.Xposition },
           { rotate: rotateCard }]}
-          ]}>
+        ]}
+      >
 
-        <Text style = { styles.CardView_Title }> { this.props.item.cardView_Title } </Text>
+        <Text style = { styles.applicantName }>
+          { this.props.item.applicantName }
+        </Text>
 
         { this.state.LeftText &&
-          <Text style = { styles.Left_Text_Style }> Left Swipe </Text>
+          <Text style = { styles.leftText }> Left Swipe </Text>
         }
 
         { this.state.RightText &&
-          <Text style = { styles.Right_Text_Style }> Right Swipe </Text>}
+          <Text style = { styles.rightText }> Right Swipe </Text>}
 
       </Animated.View>
     );
@@ -157,27 +160,27 @@ export default class MyApp extends Component {
     return {
       cards: [{
         id: '1',
-        cardView_Title: 'CardView 1',
+        applicantName: 'CardView 1',
         backgroundColor: '#4CAF50'
       }, {
         id: '2',
-        cardView_Title: 'CardView 2',
+        applicantName: 'CardView 2',
         backgroundColor: '#607D8B'
       }, {
         id: '3',
-        cardView_Title: 'CardView 3',
+        applicantName: 'CardView 3',
         backgroundColor: '#9C27B0'
       }, {
         id: '4',
-        cardView_Title: 'CardView 4',
+        applicantName: 'CardView 4',
         backgroundColor: '#00BCD4'
       }, {
         id: '5',
-        cardView_Title: 'CardView 5',
+        applicantName: 'CardView 5',
         backgroundColor: '#FFC107'
       }],
       noCards: false,
-      someText: 'this is some text',
+      newId: 6,
     };
   }
 
@@ -192,7 +195,7 @@ export default class MyApp extends Component {
   }
 
   removeCardView(id) {
-    this.state.cards.splice( this.state.cards.findIndex( x => x.id == id ), 1 );
+    this.state.cards.splice( this.state.cards.findIndex(x => x.id == id ), 1 );
 
     this.setState({ cards: this.state.cards }, () =>
     {
@@ -202,12 +205,20 @@ export default class MyApp extends Component {
     });
   }
 
-  makeRequest() {
-    fetch('http://www.guthib.com')
-      .then(response => {
-        console.log(response.status)
-        this.setState({ someText: response.status })
-      })
+  getApplicant() {
+    fetch('http://127.0.0.1:5000/applicant', { method: 'GET' })
+      .then(response => response.json())
+      .then(json => this.addApplicantCard(json.name))
+  }
+
+  addApplicantCard(name) {
+    const newState = {...this.state};
+    newState.cards.push({
+      id: name,
+      applicantName: name,
+      backgroundColor: '#FF0000',
+    });
+    this.setState(newState);
   }
 
   render() {
@@ -215,22 +226,18 @@ export default class MyApp extends Component {
       <View style = { styles.MainContainer }>
         {
           this.state.cards.map(( item, key ) =>
-            <SwipeableCardView
+            <Card
               key={ key }
               item={ item }
-              removeCardView={ this.removeCardView.bind( this, item.id ) }
+              removeCardView={() => this.removeCardView(item.id)}
             />
           )
         }
 
         <View style={{ flex: 1 }}>
-          <Text style={{ flex: 1 }}>
-            {this.state.someText}
-          </Text>
-
           <Button
-            title='MAKE A REQUEST YO'
-            onPress={() => this.makeRequest()}
+            title='GET NEXT CARD'
+            onPress={() => this.getApplicant()}
           />
         </View>
 
@@ -252,7 +259,7 @@ const styles = StyleSheet.create({
     paddingTop: ( Platform.OS === 'ios' ) ? 20 : 0
   },
 
-  cardView_Style: {
+  card: {
     width: '75%',
     height: '45%',
     justifyContent: 'center',
@@ -261,12 +268,12 @@ const styles = StyleSheet.create({
     borderRadius: 7
   },
 
-  CardView_Title: {
+  applicantName: {
     color: '#fff',
     fontSize: 24
   },
 
-  Left_Text_Style: {
+  leftText: {
     top: 22,
     right: 32,
     position: 'absolute',
@@ -276,7 +283,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent'
   },
 
-  Right_Text_Style: {
+  rightText: {
     top: 22,
     left: 32,
     position: 'absolute',
