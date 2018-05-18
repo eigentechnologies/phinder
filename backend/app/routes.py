@@ -55,11 +55,11 @@ def upload():
 def get_applicant():
     if request.method == 'GET':
         applicant = db.session.query(Applicant).filter_by(status='PENDING').first()
-        return jsonify(name=applicant.name, filename=applicant.cv)
+        return jsonify(id=applicant.id, name=applicant.name, filename=applicant.cv)
 
     if request.method == 'PUT':
         d = request.get_json(force=True)
-        applicant = Applicant.query.filter_by(cv=d.get('filename')).first()
+        applicant = Applicant.query.filter_by(id=d.get('id')).first()
         applicant.status = d.get('decision')
         db.session.commit()
         return jsonify({'success': True})
