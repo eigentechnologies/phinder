@@ -9,19 +9,12 @@ class SwipeableCardView extends Component<{}>
   constructor()
   {
     super();
-
     this.panResponder;
-
     this.state = {
-
       Xposition: new Animated.Value(0),
-
       RightText: false,
-
       LeftText: false,
-
-  }
-
+    }
     this.CardView_Opacity = new Animated.Value(1);
   }
 
@@ -30,53 +23,37 @@ class SwipeableCardView extends Component<{}>
     this.panResponder = PanResponder.create(
     {
       onStartShouldSetPanResponder: (evt, gestureState) => false,
-
       onMoveShouldSetPanResponder: (evt, gestureState) => true,
-
       onStartShouldSetPanResponderCapture: (evt, gestureState) => false,
-
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
-
       onPanResponderMove: (evt, gestureState) =>
       {
         this.state.Xposition.setValue(gestureState.dx);
 
-        if( gestureState.dx > SCREEN_WIDTH - 250 )
+        if ( gestureState.dx > SCREEN_WIDTH - 250 )
         {
-
           this.setState({
-
             RightText: true,
-
             LeftText: false
           });
 
         }
-        else if( gestureState.dx < -SCREEN_WIDTH + 250 )
+        else if ( gestureState.dx < -SCREEN_WIDTH + 250 )
         {
-
           this.setState({
-
             LeftText: true,
-
             RightText: false
-
           });
-
         }
       },
 
       onPanResponderRelease: (evt, gestureState) =>
       {
-        if( gestureState.dx < SCREEN_WIDTH - 150 && gestureState.dx > -SCREEN_WIDTH + 150 )
+        if( gestureState.dx < SCREEN_WIDTH - 300 && gestureState.dx > -SCREEN_WIDTH + 300 )
         {
-
           this.setState({
-
             LeftText: false,
-
             RightText: false
-
           });
 
           Animated.spring( this.state.Xposition,
@@ -87,7 +64,7 @@ class SwipeableCardView extends Component<{}>
           }, { useNativeDriver: true }).start();
         }
 
-        else if( gestureState.dx > SCREEN_WIDTH - 150 )
+        else if( gestureState.dx > SCREEN_WIDTH - 300 )
         {
 
           Animated.parallel(
@@ -112,7 +89,7 @@ class SwipeableCardView extends Component<{}>
           });
 
         }
-        else if( gestureState.dx < -SCREEN_WIDTH + 150 )
+        else if( gestureState.dx < -SCREEN_WIDTH + 300 )
         {
           Animated.parallel(
           [
@@ -150,26 +127,21 @@ class SwipeableCardView extends Component<{}>
     return(
 
       <Animated.View {...this.panResponder.panHandlers}
-      style = {[
-        styles.cardView_Style, { backgroundColor: this.props.item.backgroundColor,
-        opacity: this.CardView_Opacity,
-        transform: [{ translateX: this.state.Xposition },
-        { rotate: rotateCard }]}
-        ]}>
+        style = {[
+          styles.cardView_Style, { backgroundColor: this.props.item.backgroundColor,
+          opacity: this.CardView_Opacity,
+          transform: [{ translateX: this.state.Xposition },
+          { rotate: rotateCard }]}
+          ]}>
 
         <Text style = { styles.CardView_Title }> { this.props.item.cardView_Title } </Text>
 
-        {
-
-          ( this.state.LeftText ) ? (<Text style = { styles.Left_Text_Style }> Left Swipe </Text>) : null
-
+        { this.state.LeftText &&
+          <Text style = { styles.Left_Text_Style }> Left Swipe </Text>
         }
 
-        {
-
-          ( this.state.RightText ) ? (<Text style = { styles.Right_Text_Style }> Right Swipe </Text>) : null
-
-        }
+        { this.state.RightText &&
+          <Text style = { styles.Right_Text_Style }> Right Swipe </Text>}
 
       </Animated.View>
     );
@@ -178,12 +150,14 @@ class SwipeableCardView extends Component<{}>
 
 export default class MyApp extends Component<{}>
 {
-  constructor()
-  {
+  constructor() {
     super();
+    this.state = this.getDefaultState();
+  }
 
-    this.state = { Sample_CardView_Items_Array:
-    [
+  getDefaultState() {
+    return {
+      Sample_CardView_Items_Array: [
       {
         id: '1',
         cardView_Title: 'CardView 1',
@@ -223,7 +197,7 @@ export default class MyApp extends Component<{}>
 
     if( this.state.Sample_CardView_Items_Array.length == 0 )
     {
-      this.setState({ No_More_CardView: true });
+      this.setState(this.getDefaultState());
     }
   }
 
@@ -233,9 +207,8 @@ export default class MyApp extends Component<{}>
 
     this.setState({ Sample_CardView_Items_Array: this.state.Sample_CardView_Items_Array }, () =>
     {
-      if( this.state.Sample_CardView_Items_Array.length == 0 )
-      {
-        this.setState({ No_More_CardView: true });
+      if( this.state.Sample_CardView_Items_Array.length == 0 ) {
+        this.setState(this.getDefaultState());
       }
     });
   }
@@ -246,21 +219,13 @@ export default class MyApp extends Component<{}>
       <View style = { styles.MainContainer }>
       {
         this.state.Sample_CardView_Items_Array.map(( item, key ) =>
-        (
           <SwipeableCardView key = { key } item = { item } removeCardView = { this.removeCardView.bind( this, item.id ) }/>
-        ))
+        )
       }
-      {
-        ( this.state.No_More_CardView )
-        ?
-           (
-
-            <Text style = {{ fontSize: 22, color: '#000' }}>No more paralegals female found. Sorry, Julio.</Text>
-
-           )
-        :
-          null
-      }
+      { this.state.No_More_CardView &&
+          <Text style = {{ fontSize: 22, color: '#000' }}>
+            No more paralegals female found. Sorry, Julio.
+          </Text> }
       </View>
     );
   }
