@@ -2,7 +2,8 @@
 
 {% block content %}
     <h1>Upload new CV</h1>
-    <form action="" method="post">
+    <form action="" method="post" enctype=multipart/form-data>
+        <input type=file name=file>
         {{ form.hidden_tag() }}
         <p>
             {{ form.name.label }}<br>
