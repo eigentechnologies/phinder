@@ -4,10 +4,10 @@ import { Platform, StyleSheet, View, Text, Dimensions, Animated, PanResponder } 
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-class SwipeableCardView extends Component<{}>
-{
-  constructor()
-  {
+
+class SwipeableCardView extends Component {
+
+  constructor() {
     super();
     this.panResponder;
     this.state = {
@@ -18,28 +18,26 @@ class SwipeableCardView extends Component<{}>
     this.CardView_Opacity = new Animated.Value(1);
   }
 
-  componentWillMount()
-  {
-    this.panResponder = PanResponder.create(
-    {
+  componentWillMount() {
+    this.panResponder = PanResponder.create({
       onStartShouldSetPanResponder: (evt, gestureState) => false,
+
       onMoveShouldSetPanResponder: (evt, gestureState) => true,
+
       onStartShouldSetPanResponderCapture: (evt, gestureState) => false,
+
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
-      onPanResponderMove: (evt, gestureState) =>
-      {
+
+      onPanResponderMove: (evt, gestureState) => {
         this.state.Xposition.setValue(gestureState.dx);
 
-        if ( gestureState.dx > SCREEN_WIDTH - 250 )
-        {
+        if ( gestureState.dx > SCREEN_WIDTH - 250 ) {
           this.setState({
             RightText: true,
             LeftText: false
           });
 
-        }
-        else if ( gestureState.dx < -SCREEN_WIDTH + 250 )
-        {
+        } else if ( gestureState.dx < -SCREEN_WIDTH + 250 ) {
           this.setState({
             LeftText: true,
             RightText: false
@@ -47,10 +45,8 @@ class SwipeableCardView extends Component<{}>
         }
       },
 
-      onPanResponderRelease: (evt, gestureState) =>
-      {
-        if( gestureState.dx < SCREEN_WIDTH - 300 && gestureState.dx > -SCREEN_WIDTH + 300 )
-        {
+      onPanResponderRelease: (evt, gestureState) => {
+        if( gestureState.dx < SCREEN_WIDTH - 300 && gestureState.dx > -SCREEN_WIDTH + 300 ) {
           this.setState({
             LeftText: false,
             RightText: false
@@ -62,10 +58,8 @@ class SwipeableCardView extends Component<{}>
             speed: 5,
             bounciness: 10,
           }, { useNativeDriver: true }).start();
-        }
 
-        else if( gestureState.dx > SCREEN_WIDTH - 300 )
-        {
+        } else if( gestureState.dx > SCREEN_WIDTH - 300 ) {
 
           Animated.parallel(
           [
@@ -88,9 +82,7 @@ class SwipeableCardView extends Component<{}>
             });
           });
 
-        }
-        else if( gestureState.dx < -SCREEN_WIDTH + 300 )
-        {
+        } else if( gestureState.dx < -SCREEN_WIDTH + 300 ) {
           Animated.parallel(
           [
             Animated.timing( this.state.Xposition,
@@ -116,16 +108,13 @@ class SwipeableCardView extends Component<{}>
     });
   }
 
-  render()
-  {
-    const rotateCard = this.state.Xposition.interpolate(
-    {
+  render() {
+    const rotateCard = this.state.Xposition.interpolate({
        inputRange: [-200, 0, 200],
        outputRange: ['-20deg', '0deg', '20deg'],
     });
 
-    return(
-
+    return (
       <Animated.View {...this.panResponder.panHandlers}
         style = {[
           styles.cardView_Style, { backgroundColor: this.props.item.backgroundColor,
@@ -148,8 +137,7 @@ class SwipeableCardView extends Component<{}>
   }
 }
 
-export default class MyApp extends Component<{}>
-{
+export default class MyApp extends Component {
   constructor() {
     super();
     this.state = this.getDefaultState();
@@ -157,92 +145,83 @@ export default class MyApp extends Component<{}>
 
   getDefaultState() {
     return {
-      Sample_CardView_Items_Array: [
-      {
+      cards: [{
         id: '1',
         cardView_Title: 'CardView 1',
         backgroundColor: '#4CAF50'
-      },
-
-      {
+      }, {
         id: '2',
         cardView_Title: 'CardView 2',
         backgroundColor: '#607D8B'
-      },
-
-      {
+      }, {
         id: '3',
         cardView_Title: 'CardView 3',
         backgroundColor: '#9C27B0'
-      },
-
-      {
+      }, {
         id: '4',
         cardView_Title: 'CardView 4',
         backgroundColor: '#00BCD4'
-      },
-
-      {
+      }, {
         id: '5',
         cardView_Title: 'CardView 5',
         backgroundColor: '#FFC107'
-      },
-
-    ], No_More_CardView: false };
+      }],
+      noCards: false
+    };
   }
 
-  componentDidMount()
-  {
-    this.setState({ Sample_CardView_Items_Array: this.state.Sample_CardView_Items_Array.reverse() });
+  componentDidMount() {
+    this.setState({
+      cards: this.state.cards.reverse()
+    });
 
-    if( this.state.Sample_CardView_Items_Array.length == 0 )
-    {
+    if( this.state.cards.length == 0 ) {
       this.setState(this.getDefaultState());
     }
   }
 
-  removeCardView =(id)=>
-  {
-    this.state.Sample_CardView_Items_Array.splice( this.state.Sample_CardView_Items_Array.findIndex( x => x.id == id ), 1 );
+  removeCardView = id => {
+    this.state.cards.splice( this.state.cards.findIndex( x => x.id == id ), 1 );
 
-    this.setState({ Sample_CardView_Items_Array: this.state.Sample_CardView_Items_Array }, () =>
+    this.setState({ cards: this.state.cards }, () =>
     {
-      if( this.state.Sample_CardView_Items_Array.length == 0 ) {
+      if( this.state.cards.length == 0 ) {
         this.setState(this.getDefaultState());
       }
     });
   }
 
-  render()
-  {
+  render() {
     return(
       <View style = { styles.MainContainer }>
-      {
-        this.state.Sample_CardView_Items_Array.map(( item, key ) =>
-          <SwipeableCardView key = { key } item = { item } removeCardView = { this.removeCardView.bind( this, item.id ) }/>
-        )
-      }
-      { this.state.No_More_CardView &&
-          <Text style = {{ fontSize: 22, color: '#000' }}>
-            No more paralegals female found. Sorry, Julio.
-          </Text> }
+        {
+          this.state.cards.map(( item, key ) =>
+            <SwipeableCardView
+              key={ key }
+              item={ item }
+              removeCardView={ this.removeCardView.bind( this, item.id ) }
+            />
+          )
+        }
+        { this.state.noCards &&
+            <Text style = {{ fontSize: 22, color: '#000' }}>
+              No more paralegals female found. Sorry, Julio.
+            </Text>
+        }
       </View>
     );
   }
 }
 
-const styles = StyleSheet.create(
-{
-  MainContainer:
-  {
+const styles = StyleSheet.create({
+  MainContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: ( Platform.OS === 'ios' ) ? 20 : 0
   },
 
-  cardView_Style:
-  {
+  cardView_Style: {
     width: '75%',
     height: '45%',
     justifyContent: 'center',
@@ -251,14 +230,12 @@ const styles = StyleSheet.create(
     borderRadius: 7
   },
 
-  CardView_Title:
-  {
+  CardView_Title: {
     color: '#fff',
     fontSize: 24
   },
 
-  Left_Text_Style:
-  {
+  Left_Text_Style: {
     top: 22,
     right: 32,
     position: 'absolute',
@@ -268,8 +245,7 @@ const styles = StyleSheet.create(
     backgroundColor: 'transparent'
   },
 
-  Right_Text_Style:
-  {
+  Right_Text_Style: {
     top: 22,
     left: 32,
     position: 'absolute',
