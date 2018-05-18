@@ -1,6 +1,15 @@
 import React, { Component } from 'react';
 
-import { Platform, StyleSheet, View, Text, Dimensions, Animated, PanResponder } from 'react-native';
+import {
+  Platform,
+  StyleSheet,
+  View,
+  Text,
+  Dimensions,
+  Animated,
+  PanResponder,
+  Button,
+} from 'react-native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -138,6 +147,7 @@ class SwipeableCardView extends Component {
 }
 
 export default class MyApp extends Component {
+
   constructor() {
     super();
     this.state = this.getDefaultState();
@@ -166,7 +176,8 @@ export default class MyApp extends Component {
         cardView_Title: 'CardView 5',
         backgroundColor: '#FFC107'
       }],
-      noCards: false
+      noCards: false,
+      someText: 'this is some text',
     };
   }
 
@@ -180,7 +191,7 @@ export default class MyApp extends Component {
     }
   }
 
-  removeCardView = id => {
+  removeCardView(id) {
     this.state.cards.splice( this.state.cards.findIndex( x => x.id == id ), 1 );
 
     this.setState({ cards: this.state.cards }, () =>
@@ -189,6 +200,14 @@ export default class MyApp extends Component {
         this.setState(this.getDefaultState());
       }
     });
+  }
+
+  makeRequest() {
+    fetch('http://www.guthib.com')
+      .then(response => {
+        console.log(response.status)
+        this.setState({ someText: response.status })
+      })
   }
 
   render() {
@@ -203,6 +222,18 @@ export default class MyApp extends Component {
             />
           )
         }
+
+        <View style={{ flex: 1 }}>
+          <Text style={{ flex: 1 }}>
+            {this.state.someText}
+          </Text>
+
+          <Button
+            title='MAKE A REQUEST YO'
+            onPress={() => this.makeRequest()}
+          />
+        </View>
+
         { this.state.noCards &&
             <Text style = {{ fontSize: 22, color: '#000' }}>
               No more paralegals female found. Sorry, Julio.
