@@ -1,6 +1,6 @@
 import os
 
-from flask import flash, Flask, jsonify, redirect, render_template, request, url_for
+from flask import flash, Flask, jsonify, redirect, render_template, Response, request, url_for
 from werkzeug.utils import secure_filename
 
 from app import app, db
@@ -51,14 +51,18 @@ def upload():
     return render_template('upload.html', title='Upload', form=form)
 
 
-@app.route('/applicant', methods=['GET'])
+@app.route('/applicant', methods=['GET', 'PUT'])
 def get_applicant():
     if request.method == 'GET':
         applicant = db.session.query(Applicant).filter_by(status='PENDING').first()
         return jsonify(name=applicant.name, filename=applicant.cv)
-#     
-#     if request.method == 'PUT':
-#         d = request.get_json(force=True)
-#         applicant = db.session.query(Applicant).get
+
+    if request.method == 'PUT':
+        d = request.get_json(force=True)
+        applicant = Applicant.query.filter_by(cv=d.get('filename')).first()
+        applicant.status = d.get('decision')
+        db.session.commit()
+        return jsonify({'success': True})
+
 
 
